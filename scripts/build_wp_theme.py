@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "site"
 OUT = ROOT / "build" / "wordpress" / "brainops"
 ZIP = ROOT / "build" / "brainops-theme.zip"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 THEME_URI = "<?php echo esc_url( get_template_directory_uri() ); ?>"
 
@@ -158,6 +158,103 @@ endif;
 get_footer();
 """
 
+# Hébergeur du WordPress de brainops.tech (adresse IP et DNS chez OVH, octobre 2026).
+WP_HOST = "OVH SAS, 2 rue Kellermann, 59100 Roubaix, France. Téléphone : 1007 (depuis la France), +33 9 72 10 10 07."
+
+LEGAL_PHP = """
+// -- Mentions légales ------------------------------------------------------------
+// Un site professionnel doit identifier son éditeur (LCEN, article 6). Le thème crée la page
+// en brouillon, pré-remplie, et rappelle dans l'administration de la compléter et de la publier.
+
+const BRAINOPS_LEGAL_SLUG = 'mentions-legales';
+
+function brainops_legal_page() {
+	return get_page_by_path( BRAINOPS_LEGAL_SLUG, OBJECT, 'page' );
+}
+
+/** Adresse de la page, quel que soit le réglage des permaliens (simples ou lisibles). */
+function brainops_legal_url() {
+	$page = brainops_legal_page();
+	if ( $page && 'publish' === $page->post_status ) {
+		return get_permalink( $page );
+	}
+	return home_url( '/' . BRAINOPS_LEGAL_SLUG . '/' );
+}
+
+function brainops_create_legal_page() {
+	update_option( 'brainops_legal_created', 1 );
+	if ( brainops_legal_page() ) {
+		return;
+	}
+	wp_insert_post( array(
+		'post_type'    => 'page',
+		'post_status'  => 'draft',
+		'post_title'   => 'Mentions légales',
+		'post_name'    => BRAINOPS_LEGAL_SLUG,
+		'post_content' => <<<'BRAINOPS_LEGAL'
+__LEGAL_CONTENT__
+BRAINOPS_LEGAL
+	) );
+}
+add_action( 'after_switch_theme', 'brainops_create_legal_page' );
+
+// Un thème remplacé par une nouvelle version ne repasse pas par after_switch_theme : une seule
+// vérification dans l'administration. Une page supprimée ensuite volontairement n'est pas recréée.
+add_action( 'admin_init', function () {
+	if ( current_user_can( 'edit_pages' ) && ! get_option( 'brainops_legal_created' ) ) {
+		brainops_create_legal_page();
+	}
+} );
+
+add_action( 'admin_notices', function () {
+	if ( ! current_user_can( 'edit_pages' ) ) {
+		return;
+	}
+	$page = brainops_legal_page();
+	if ( ! $page ) {
+		$message = 'la page « Mentions légales » n’existe pas (adresse attendue : mentions-legales).';
+		$link    = admin_url( 'post-new.php?post_type=page' );
+		$action  = 'Créer la page';
+	} elseif ( 'publish' !== $page->post_status ) {
+		$message = 'la page « Mentions légales » est préparée mais pas publiée : le lien du pied de page mène à une erreur 404.';
+		$link    = get_edit_post_link( $page->ID, 'raw' );
+		$action  = 'Compléter et publier';
+	} elseif ( false !== strpos( $page->post_content, '[à compléter]' ) ) {
+		$message = 'la page « Mentions légales » contient encore des champs « [à compléter] ».';
+		$link    = get_edit_post_link( $page->ID, 'raw' );
+		$action  = 'Compléter';
+	} else {
+		return;
+	}
+	printf(
+		'<div class="notice notice-warning"><p><strong>BrainOps :</strong> %s <a href="%s">%s</a>. Un site professionnel doit identifier son éditeur.</p></div>',
+		esc_html( $message ),
+		esc_url( $link ),
+		esc_html( $action )
+	);
+} );
+"""
+
+
+def legal_blocks() -> str:
+    """Contenu de la page Mentions légales en blocs WordPress, tiré de site/mentions-legales.html."""
+    source = (SRC / "mentions-legales.html").read_text(encoding="utf-8")
+    body = section(source, "<main>", "</main>")
+    blocks = []
+    for sec in re.findall(r"<section>(.*?)</section>", body, re.S):
+        title = re.search(r"<h2>(.*?)</h2>", sec, re.S).group(1).strip()
+        blocks.append(f'<!-- wp:heading -->\n<h2 class="wp-block-heading">{title}</h2>\n<!-- /wp:heading -->')
+        for para in re.findall(r"<p>(.*?)</p>", sec, re.S):
+            para = re.sub(r'<span class="todo">(.*?)</span>', lambda m: m.group(1), para).strip()
+            if title == "Hébergement":
+                para = WP_HOST
+            blocks.append(f"<!-- wp:paragraph -->\n<p>{para}</p>\n<!-- /wp:paragraph -->")
+    content = "\n\n".join(blocks)
+    if "BRAINOPS_LEGAL" in content:
+        raise SystemExit("le texte des mentions légales contient le marqueur de fin du nowdoc PHP")
+    return content
+
+
 NOT_FOUND_PHP = """<?php
 /**
  * Page introuvable.
@@ -195,10 +292,10 @@ def main() -> int:
     header = re.sub(r'href="#([\w-]+)"', lambda m: f"href=\"<?php echo esc_url( home_url( '/#{m.group(1)}' ) ); ?>\"", header)
     header = header.replace('src="assets/', f'src="{THEME_URI}/assets/')
     main_html = main_html.replace('src="assets/', f'src="{THEME_URI}/assets/')
-    legal = "<?php echo esc_url( home_url( '/mentions-legales/' ) ); ?>"
+    legal = "<?php echo esc_url( brainops_legal_url() ); ?>"
     footer = footer.replace("<span>Illustrations générées avec Nano Banana Pro</span>",
                             f'<span>Illustrations générées avec Nano Banana Pro · <a href="{legal}">Mentions légales</a></span>')
-    if "mentions-legales" not in footer:
+    if "brainops_legal_url" not in footer:
         raise SystemExit("pied de page introuvable : lien vers les mentions légales non ajouté")
 
     fonts_css = (SRC / "assets" / "fonts" / "fonts.css").read_text(encoding="utf-8")
@@ -215,7 +312,8 @@ def main() -> int:
     shutil.copy(SRC / "wordpress" / "screenshot.png", OUT / "screenshot.png")
 
     (OUT / "style.css").write_text(STYLE_HEADER + "\n" + fonts_css + "\n" + style + "\n" + EXTRA_CSS, encoding="utf-8")
-    (OUT / "functions.php").write_text(FUNCTIONS.replace("__DESCRIPTION__", php_description), encoding="utf-8")
+    functions = FUNCTIONS.replace("__DESCRIPTION__", php_description) + LEGAL_PHP.replace("__LEGAL_CONTENT__", legal_blocks())
+    (OUT / "functions.php").write_text(functions, encoding="utf-8")
     (OUT / "header.php").write_text(HEADER_PHP + header + "\n", encoding="utf-8")
     (OUT / "footer.php").write_text(footer + FOOTER_PHP_TAIL, encoding="utf-8")
     (OUT / "front-page.php").write_text(

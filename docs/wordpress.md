@@ -22,14 +22,26 @@ Testé sur WordPress 6 (PHP 8.2) en local : page d'accueil, polices, images, mé
 
 ## Installer
 
+**Forcer HTTPS chez OVH** (hébergement mutualisé) : en tête du fichier `.htaccess` à la racine du WordPress :
+
+```
+RewriteEngine On
+RewriteCond %{SERVER_PORT} 80
+RewriteRule ^(.*)$ https://brainops.tech/$1 [R=301,L]
+```
+
+Le thème ne redirige pas lui-même : derrière les serveurs frontaux d'OVH, PHP ne voit pas toujours qu'une requête est arrivée en HTTPS, et une redirection côté thème risquerait de boucler.
+
 **WordPress installé chez un hébergeur (WordPress.org, chez OVH, o2switch, Hostinger…)** : Apparence › Thèmes › Ajouter › Téléverser un thème › choisir `brainops-theme.zip` › Installer › Activer. Si l'hébergeur limite les envois à 2 Mo, déposer le dossier `build/wordpress/brainops/` par FTP dans `wp-content/themes/`, puis l'activer.
 
 **WordPress.com** : les thèmes personnalisés ne s'installent qu'avec une offre qui autorise les extensions et thèmes (Business ou supérieure).
 
+À l'activation (ou à la première visite de l'administration après une mise à jour du thème), le thème crée la page « Mentions légales » **en brouillon**, pré-remplie : hébergement chez OVH, contact, cookies, propriété intellectuelle. Un avis dans l'administration rappelle de la compléter et de la publier tant qu'elle n'est pas publiée ou qu'il reste des champs « [à compléter] ». Le lien du pied de page fonctionne avec les permaliens simples comme avec les permaliens lisibles. Une page supprimée volontairement n'est pas recréée.
+
 Puis, une fois :
 
 1. **Réglages › Permaliens** : choisir « Titre de la publication », pour des adresses comme `/mentions-legales/`.
-2. **Pages › Ajouter** : une page « Mentions légales » dont l'adresse (slug) est `mentions-legales`, avec le texte ci-dessous complété.
+2. **Pages › Mentions légales** (brouillon créé par le thème) : compléter les champs de l'éditeur, puis **Publier**.
 3. **Réglages › Général** : titre du site « BrainOps », langue « Français ».
 4. Ne pas ajouter d'extension de mesure d'audience ou de formulaire sans prévoir le bandeau de consentement qu'elle impose.
 
