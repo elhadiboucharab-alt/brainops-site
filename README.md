@@ -27,7 +27,6 @@ Le site ne dépose aucun cookie, n'appelle aucun service tiers (polices servies 
 ## Avant la mise en ligne
 
 - Compléter `site/mentions-legales.html` : le build du site statique refuse de produire le site tant qu'il reste des champs « [à compléter] ».
-- Ajouter une adresse de contact dans la section « Programme pilote » de `site/index.html`.
 
 ## Aperçu local
 

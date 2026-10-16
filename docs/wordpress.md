@@ -37,7 +37,7 @@ Puis, une fois :
 
 À compléter puis coller dans la page (bloc « Titre » pour les intertitres) :
 
-> **Éditeur du site** — Nom ou raison sociale : … · Forme juridique et capital, le cas échéant : … · Adresse : … · Immatriculation (RCS ou SIREN), le cas échéant : … · Contact : … · Directeur ou directrice de la publication : …
+> **Éditeur du site** — Nom ou raison sociale : … · Forme juridique et capital, le cas échéant : … · Adresse : … · Immatriculation (RCS ou SIREN), le cas échéant : … · Contact : contact@brainops.tech · Directeur ou directrice de la publication : …
 >
 > **Hébergement** — Nom, adresse et téléphone de l'hébergeur du WordPress (indiqués dans le contrat d'hébergement).
 >

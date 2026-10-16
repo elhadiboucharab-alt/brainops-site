@@ -157,6 +157,8 @@ section { padding-block: clamp(56px, 9vw, 104px); border-bottom: 1px solid var(-
 .pilot { border-bottom: 0; }
 .pilot-box { display: grid; gap: 22px; padding: clamp(28px, 5vw, 48px); border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
 .pilot-box ul { margin: 0; padding-left: 20px; color: var(--muted); display: grid; gap: 6px; }
+.pilot-box .contact { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; color: var(--muted); }
+.pilot-box .email { color: var(--ink); font-family: var(--f-mono); font-weight: 500; user-select: all; }
 .status { font-size: .95rem; color: var(--muted); max-width: 70ch; }
 
 footer { padding-block: 32px; color: var(--muted); font-size: .85rem; }
@@ -366,6 +368,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: 
           <li>Datadog ou SAP Cloud ALM déjà en place</li>
           <li>une équipe prête à valider la carte de ses processus métier</li>
         </ul>
+        <div class="contact">
+          <a class="btn primary" href="mailto:contact@brainops.tech?subject=Programme%20pilote%20BrainOps">Nous écrire</a>
+          <span>ou à l'adresse <b class="email">contact@brainops.tech</b></span>
+        </div>
       </div>
     </div>
   </section>

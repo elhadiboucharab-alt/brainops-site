@@ -37,9 +37,9 @@ Le site ne dépose aucun cookie et n'a ni formulaire ni mesure d'audience : pas 
 
 Ensuite, chaque `git push` sur `main` redéploie le site ; chaque autre branche obtient une adresse d'aperçu. 
 
-## Une adresse de contact
+## Contact
 
-Le site et la présentation n'ont pas encore d'adresse de contact. Avec le domaine chez Cloudflare, **Email Routing** (gratuit) crée par exemple `contact@brainops.tech` et transfère les messages vers une boîte existante, sans serveur de messagerie. Une fois l'adresse choisie, l'ajouter dans la section « Programme pilote » de `site/index.html`, dans les mentions légales et sur la dernière diapositive.
+L'adresse `contact@brainops.tech` (messagerie OVH, d'après les enregistrements MX du domaine) figure dans la section « Programme pilote » et dans les mentions légales.
 
 ## Mettre à jour le site
 
